@@ -2,10 +2,10 @@
 
 Have one person fill in the names of who is doing this:
 
-1. _______________________________
-2. _______________________________
-3. _______________________________
-4. _______________________________
+1. Gabriele Borg
+2. Sergey Egiev
+3. Pablo Garriga
+4. Maor Milgrom
 
 # In-Class
 
