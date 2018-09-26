@@ -120,24 +120,54 @@ flights %>%
 
 
 ### Mutating Rows
-8. Create a variable called gain which describes the difference between arrival delap and departure delay.
+8. Create a variable called gain which describes the difference between arrival delay and departure delay.
+```{r}
+flights %>%
+  mutate(gain=arr_delay-dep_delay) %>%
+  select(gain)
+```
+
+
 9. Create a variable called speed which is distance over time in hours.
+```{r}
+flights %>%
+  mutate(speed=distance/(air_time/60)) %>%
+  select(speed)
+```
 
 
 ###Summarise
 10. Summarise the average delay for all flights.
+```{r}
+flights %>%
+  summarize(avg_delay=mean(arr_delay+dep_delay,na.rm=TRUE)) %>%
+  select(avg_delay)
+```
+
 
 ## Overall Questions
 
 11. Split the complete dataset into individual planes and then summarise each plane by counting the number of flights (count = n()) and computing the average distance and arrival delay . Then plot this:
 
-```
-ggplot(delay, aes(dist, delay)) +
-  geom_point(aes(size = count), alpha = 1/2) +
-  geom_smooth() +
-  scale_size_area()
+```{r}
+library(ggplot2)
+flights %>%
+  group_by(tailnum) %>%
+  summarize(count=n(),dist=mean(distance,na.rm=T),delay=mean(arr_delay+dep_delay,na.rm=TRUE)) %>%
+  ggplot(aes(dist, delay)) +
+    geom_point(aes(size = count), alpha = 1/2) +
+    geom_smooth() +
+    scale_size_area()
 ```
 12. Find the number of planes and the number of flights that go to each possible destination.
+
+```{r}
+flights %>%
+  group_by(dest) %>%
+  summarize(planes=n_distinct(tailnum),flights=n())
+
+
+```
 
 ### More Difficult
 
@@ -148,8 +178,10 @@ In the videos we learned about piping our commands. The goal of piping is to hel
 
 13. Consider the code Below:
 
-```
-filter(
+```{r}
+filter(summarise(select(group_by(flights, year, month, day),arr_delay, dep_delay),arr = mean(arr_delay, na.rm = TRUE), dep = mean(dep_delay, na.rm = TRUE)), arr > 30 | dep > 30)
+
+original_code=filter(
   summarise(
     select(
       group_by(flights, year, month, day),
@@ -160,13 +192,25 @@ filter(
   ),
   arr > 30 | dep > 30
 )
+
 ```
-
 a. What are some problems with this function?
+It is difficult to follow. UGLY!
 b. How easy is it to follow the logic of this?
+Not easy at all.
 c. Rewrite this using piping to make it more understandable.
-d. Does your rewritten command give the same results?
+```{r}
+new_code=flights %>%
+  group_by(year,month,day) %>%
+  select(arr_delay,dep_delay) %>%
+  summarize( arr = mean(arr_delay, na.rm = TRUE), dep = mean(dep_delay, na.rm = TRUE)) %>%
+  filter(arr > 30 | dep > 30)
 
+```
+d. Does your rewritten command give the same results?
+```{r}
+all_equal(original_code,new_code)
+```
 14. Consider the code below
 
 ```
@@ -187,9 +231,22 @@ hourly_delay <- filter(
 ```
 
 1. What are some problems with this function?
+Hard to follow
 b. How easy is it to follow the logic of this?
+Difficult
 c. Rewrite this using piping to make it more understandable.
+```{r}
+
+hourly_delay= flights %>%
+  filter(!is.na(dep_delay)) %>%
+  group_by(date, hour) %>%
+  summarise( delay=mean(dep_delay), n=n()) %>%
+  filter(n>10)
+  
+```
+
 d. Does your rewritten command give the same results?
+Yes.
 
 
 **Consider how to join information from the other datasets in the package with the current information. Is there a way to tell if weather affected the departure time? Ask yourself other questions about this data and then answer them below.**
