@@ -1,57 +1,54 @@
 # In-Class: September 19, 2018
 
-
 ## Part 1 (You can do this with or without dplyr)
-```{r}
-library(dplyr)
-```
 
 1. The data set at rnf6080.dat records hourly rainfall at a certain location in Canada, every day from 1960 to 1980. First, we need to load the data set into R using the command read.table(). Use the help function to learn what arguments this function takes. Once you have the necessary input, load the data set into R and make it a data frame called rain.df.
+
 ```{r}
-setwd("C:/Users/yaela/Dropbox (Brown)/Brown/R/in-class-work-2018-maormilgrom/week-02-in-class-econ")  
-# change working directory to the current folder
-rain.df <- read.table("rnf6080.dat")  # read in the data intto rain.df dataframe
-rain.df <- tbl_df(rain.df)
+setwd("C:/Users/yaela/Dropbox (Brown)/Brown/R/week2/week-02-in-class-econ")
+rain.df=data.frame(read.table("rnf6080.dat"))
+rain.df=tbl_df(rain.df)
+library(dplyr)
 ```
 
 2. How many rows and columns does rain.df have? (If there are not 5070 rows and 27 columns, something is wrong; check the previous part to see what might have gone wrong in the previous part.)
 ```{r}
-nrow(rain.df)  # print out the number of rows in rain.df
-ncol(rain.df)  # print out the number of columns in rain.df
+dim(rain.df)
 ```
 
 3. What are the names of the columns of rain.df?
 ```{r}
-names(rain.df)  # print out the names of variables in rain.df
+names(rain.df)
 ```
-
 4. What is the value of row 5, column 7 of rain.df?
 ```{r}
-rain.df[5, 7]  ## print out the value of row 5, column 7
+rain.df[5,7]
 ```
-
 5. Display the second row of rain.df in its entirety.
 ```{r}
-rain.df[2, ]  # print our the second row
+rain.df[2,]
 ```
-
 6. Explain what the command below doesby running it on your data and examining the object. (You may find the display functions head() and tail() useful here.) Is it clear now what the last 24 columns represent?
 ```{r}
-names(rain.df) <- c("year","month","day", seq(0,23))  # the function assigns the names to variables (year to first var, month to second, etc.) the last 24 columns are 24 hours
-```
+names(rain.df) <- c("year","month","day",seq(0,23))
+````
+The remaining 24 columns are the hours of the day.
 
 7. Create a new column in the data frame called daily, which is the sum of the rightmost 24 columns. With this column, create a histogram of the values in this column, which are supposed to be daily rainfall values. What is wrong with this picture?
+
 ```{r}
-rain.df <- mutate(rain.df, daily = rowSums(select(rain.df, '1':'23')))  # select rows by their names, sum across row, add to the dataframe
-rain.df$daily  # see how the sum looks. there are negative numbers!
-hist(rain.df$daily)  # plot new histogram: there are negative numbers
+rain.df=mutate(rain.df,daily=rowSums(rain.df[,4:27]))
+hist(rain.df$daily)
+#rain.df$daily=rowSums(rain.df[,4:27])
+
 ```
+We have negative values, which we shouldn't have.
 
 8. Create a new data frame rain.df.fixed that takes the original and fixes it for the apparent flaw you have discovered. Having done this, produce a new histogram with the corrected data and explain why this is more reasonable.
+
 ```{r}
-rain.df[rain.df < 0] <- NA  # select all negative valyes and replace with NA
-rain.df <- mutate(rain.df, daily = rowSums(select(rain.df, '1':'23')))  # redo the daily summation
-hist(rain.df$daily)  # plot new histogram: now no negative values
+  rain.df[rain.df < 0] <- NA
+  hist(rain.df$daily)
 ```
 
 ## Part 2
@@ -64,6 +61,7 @@ hist(rain.df$daily)  # plot new histogram: now no negative values
 
 
 ```{r}
+install.packages("nycflights13")
 library(nycflights13)
 library(dplyr)
 flights
@@ -83,40 +81,29 @@ The `dplyr` package uses verbs to perform data manipulation.
 ### Filtering Rows
 
 1. Filter all flights on your birthday.
+```{r}
+filter(flights,month==1,day==26)
+```
 2. Filter all flights in rows 567 - 589
 ```{r}
-filter(flights, month == 9 & day == 19)  # all flights on August 1st
-slice(flights, 567:589)  # rows 567-589
+flights[567:589,]
 ```
 
 ### Arranging Rows
 3. Use arrange() to order the data by year, month and day
+```{r}
+arrange(flights,year,month,day)
+```
+
 4. Use desc() to arrange flights by arrival delay.
 ```{r}
-flights %>%
-arrange(year, month, day)  %>% # arrange by year, month, day
-arrange(desc(arr_delay))
-
+arrange(flights,desc(arr_delay))
 ```
 
 ### Select
 5. Select columns containing date information.
-```{r}
-flights %>%
-  select(year,month,day)
-```
-
 6. Select columns including only plane information.
-```{r}
-flights %>%
-  select(tailnum)
-```
-
 7. Rename tailnum to tail_num
-```{r}
-flights %>%
-  select(tail_num=tailnum)
-```
 
 
 ### Mutating Rows
